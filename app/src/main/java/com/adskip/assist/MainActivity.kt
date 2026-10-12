@@ -85,6 +85,7 @@ class MainActivity : ComponentActivity() {
                 val stats by model.statistics.collectAsState()
                 var tab by remember { mutableIntStateOf(0) }
                 var resumeRevision by remember { mutableIntStateOf(0) }
+                var showDisclosure by remember { mutableStateOf(true) }
                 val owner = LocalLifecycleOwner.current
                 DisposableEffect(owner) {
                     val obs = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) {
@@ -92,6 +93,37 @@ class MainActivity : ComponentActivity() {
                     } }
                     owner.lifecycle.addObserver(obs)
                     onDispose { owner.lifecycle.removeObserver(obs) }
+                }
+                // Google Play requires a separate, prominent disclosure during normal use.
+                // Accepting this dialog does not grant Android accessibility permissions.
+                if (!config.consent && showDisclosure) {
+                    AlertDialog(
+                        onDismissRequest = { showDisclosure = false },
+                        title = { Text("Before enabling AdSkip Assist") },
+                        text = {
+                            Text(
+                                "AdSkip Assist uses Android Accessibility Service to inspect screen controls " +
+                                    "in games you explicitly approve and automatically tap detected ad-dismissal " +
+                                    "buttons. If you enable optional OCR or learned targets, it can capture " +
+                                    "screen images from those games to recognize close buttons. " +
+                                    "Optional Play Store recovery may observe when the Play Store opens.\n\n" +
+                                    "Only small learned-button crops, settings, and activity summaries are stored " +
+                                    "on your device. Full screenshots used for teaching are temporary. " +
+                                    "We do not send accessibility or screenshot data to servers.\n\n" +
+                                    "You can pause automation, remove games, revoke consent, or disable the " +
+                                    "service at any time. Rewards are never guaranteed.",
+                                fontSize = 14.sp, lineHeight = 20.sp
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { settings.setConsent(true); showDisclosure = false }) {
+                                Text("I consent")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDisclosure = false }) { Text("Not now") }
+                        }
+                    )
                 }
                 val serviceActive = remember(resumeRevision) { accessibilityEnabled() }
                 val captured = remember(resumeRevision) { TeachCaptureStore.captured }

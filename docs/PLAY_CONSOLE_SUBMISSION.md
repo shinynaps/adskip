@@ -47,7 +47,7 @@ In your repository **Settings → Secrets and variables → Actions**, create th
 macOS/Linux: `base64 < adskip-upload.jks | tr -d '\n'`  
 PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("adskip-upload.jks"))`
 
-Keep the generated base64 private. Then run **Actions → Prepare signed Play Console package → Run workflow**. It fails safely if secrets are absent, and otherwise uploads a signed review bundle to **private, short-lived Actions artifacts**, not to the public GitHub Release.
+Keep the generated base64 private. Then run **Actions → Prepare signed Play Console package → Run workflow**. It fails safely if secrets are absent, and otherwise uploads a signed review bundle to **short-lived GitHub Actions artifacts**, not to the public GitHub Release. **Because this repository is public, Actions artifacts are accessible to repository readers who meet GitHub’s download requirements.** The files contain signed distributables, not your private keystore; do not put confidential content in an AAB.
 
 ## Play Console submission (owner action)
 

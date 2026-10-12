@@ -1,91 +1,129 @@
-# AdSkip Assist
+<p align="center">
+  <img src="docs/assets/readme/hero.svg" alt="Illustrated AdSkip Assist interface showing game-only monitoring, reward modes, visual detection, and on-device privacy" width="100%" />
+</p>
 
-An Android utility for automatically pressing **legitimate, accessible** ad dismissal controls in **explicitly selected games**. Kotlin + Jetpack Compose + Material 3 + MVVM; no root, no ads SDK injection, no traffic interception, no account login and no INTERNET permission.
+<p align="center">
+  <a href="https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml"><img src="https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml/badge.svg" alt="Android APK build status" /></a>
+  <img src="https://img.shields.io/badge/platform-Android%2011%2B-45D6C1" alt="Android 11 and newer" />
+  <img src="https://img.shields.io/badge/language-Kotlin-88AEFF" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/privacy-on--device-70D8E2" alt="Local processing" />
+  <img src="https://img.shields.io/badge/status-device%20testing%20needed-F2C26D" alt="Device testing required" />
+</p>
 
-**Important:** This does not bypass rewarded-ad requirements or guarantee rewards. A separate Android app cannot reliably detect or forge a game's reward-verification callbacks. "Reward Priority" waits at least a configurable time or until a visible completion *hint* appears; either condition can still be insufficient for rewards. "Fast Skip" may deliberately forfeit rewards. See [technical feasibility](docs/TECHNICAL_FEASIBILITY.md).
+<p align="center">
+  <strong>A quiet, privacy-first Android companion for mobile-game advertisements.</strong><br>
+  Recognize supported ad close controls, automate safe dismissals, and get back to playing.
+</p>
+
+> [!IMPORTANT]
+> **AdSkip Assist cannot instantly complete rewarded ads or guarantee rewards.** Game and ad-SDK completion rules still apply. Reward Priority uses timing and visible hints, **not** access to SDK reward callbacks. No reward spoofing, APK modification, or ad-traffic interception is performed. **Physical-device compatibility is still being verified.**
+
+## Explore
+
+[Quick start](#quick-start) · [Features](#features) · [How it works](#how-it-works) · [Safety and limitations](#safety-and-limitations) · [Build](#build-locally) · [Testing](#testing) · [Troubleshooting](#troubleshooting)
+
+## Quick start
+
+![Six-step setup workflow from GitHub Actions build to optionally teaching a close button](docs/assets/readme/quickstart.svg)
+
+You do **not** need Android Studio to install the app.
+
+1. Open **[Build Android APK](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml)**, select **Run workflow**, and open the completed run.
+2. Download the **AdSkip-Assist-debug-apk** artifact. Extract it and install `app-debug.apk` on your phone.
+3. In **Settings**, read the accessibility disclosure, enable consent, and open Android's **Accessibility settings** to activate *AdSkip Assist — selected games only*.
+4. In **Games**, explicitly enable the games you want to monitor.
+5. On **Home**, tap **Start monitoring**. Use **Reward Priority** for initial testing.
+6. Optional: enable **OCR** or **Learned targets**. To teach a button, choose **Teach** for a game, capture a real ad with the temporary overlay, then select and save a **corner close control**.
+
+> [!NOTE]
+> Android 13+ may show a **Restricted setting** warning for sideloaded AccessibilityServices. Some phones offer **Settings → Apps → AdSkip Assist → ⋮ → Allow restricted settings**. Security settings vary across devices. Review permissions carefully.
+
+**Stop immediately:** Open **Settings → Emergency stop**, or disable the service through Android Accessibility settings.
 
 ## Features
 
-- Home screen with pause/resume, accessibility status, selected-game count, ad-session count and accepted-click count.
-- Games screen: searchable launcher apps, per-game enable/disable, operating mode override, and minimum-wait override.
-- Activity screen: local-only history, clear button. Never logs captured accessibility content.
-- Settings: explicit consent, conservative/extended detection, default timing, log toggle, emergency stop, Android accessibility management.
-- Native AccessibilityService with *current-frame ad-context requirement*, clickability/bounds checks, risky-CTA exclusion, event debounce, multi-stage state tracking, capped retries and timeouts.
-- GitHub Actions workflow builds and uploads a debug APK without Android Studio.
+| Feature | How it behaves |
+| --- | --- |
+| **Selected games only** | Per-game allowlist, mode override, and minimum wait settings. |
+| **Reward Priority** | Defers close actions based on visible completion hints or a configurable minimum wait. **Rewards are not assured.** |
+| **Fast Skip** | Uses controls earlier when available; may forfeit rewarded-ad credit. |
+| **Accessibility detection** | Inspects accessible window events, actionable nodes, bounds, and ad context; prefers node clicks. |
+| **On-device OCR** | Optional ML Kit analysis of supported screenshots on Android 11+. Some graphics cannot be read. |
+| **Teach a button** | Saves a small local crop of a user-selected corner control for future visual matching. |
+| **Cautious gestures** | High-confidence, corner-only fallback with rate limits and repeat checks. |
+| **Multi-stage handling** | Tracks ad stages and retries with timeouts; optional bounded Play Store recovery. |
+| **Local activity history** | Stores action summaries and settings on device, without sending screenshots to a server. |
 
-## Get an APK without Android Studio
+Visuals in this README are **conceptual illustrations**, not verified screenshots, metrics, or evidence that an ad/reward was successfully handled.
 
-1. Create a new GitHub repository and add the **contents** of this project (including `.github/workflows/android-apk.yml`) to its default `main` branch.
-2. Open the **Actions** tab in your repository. Select **Build Android APK**, then click **Run workflow** (or push a commit to `main`).
-3. When the job is green, open the run and download **AdSkip-Assist-debug-apk** under **Artifacts**.
-4. Extract the ZIP; the file inside is `app-debug.apk`. Copy it to your Android phone and open it to install.
-5. Android may require **Install unknown apps** permission for the Files/browser app used to install it. Only install builds from repos you control and trust.
-6. Open AdSkip Assist > **Settings**; read the disclosure and enable **I understand and consent**.
-7. Tap **Manage accessibility access**, locate **AdSkip Assist — selected games only** in Android Accessibility settings, and enable it.
-8. Back in AdSkip Assist > **Games**, choose games. Turn off the "Game-classified apps only" filter if your game is missing.
-9. Back on **Home**, select Reward Priority (recommended initially) or Fast Skip, then tap **Start automation**.
+## How it works
 
-**Android 13+ sideload note:** Your device may prevent a sideloaded app from enabling accessibility with a "Restricted setting" warning. Some phones allow this through **Settings > Apps > AdSkip Assist > ⋮ > Allow restricted settings**. OEM behavior differs; don't disable security scanning or protections to bypass restrictions.
+![Flow diagram: approved game to accessibility and screenshot inputs, recognition, safety decisions, safe actions, and return to game](docs/assets/readme/architecture.svg)
 
-## Local build
+The detection pipeline is intentionally conservative. **Accessible UI nodes** are preferred; optional **screenshot OCR** and **user-taught button templates** are fallback signals. The action layer checks the approved game, recent ad context, corner location, time gates, and retry limits before clicking.
 
-Requirements: Java 17, Android command-line SDK (`platforms;android-35`, `build-tools;35.0.0`), and Gradle 8.11.1. Android Studio is optional.
+A screenshot can be blocked by secure windows. Graphically rendered game content may not expose usable accessibility nodes. Some ad types therefore cannot be automated reliably.
+
+## Safety and limitations
+
+![Capabilities and guardrails illustration contrasting on-device OCR, learned targets and bounded clicks with no root, no ad interception and no reward guarantee](docs/assets/readme/safety.svg)
+
+- **No root, APK patching, SDK injection, reward callback forgery, network interception, or account credentials.**
+- Screenshot analysis and saved learned-button crops stay local. Screenshots used in teaching are discarded after selection.
+- Never blindly treat an **Install**, **Buy**, or advertiser CTA as a close button.
+- Reward Priority's delay is a **heuristic**, not proof of the game's reward verification.
+- Visual matches can fail across screen orientations, sizes, animations, overlays, or ad-network changes.
+- This is designed for **personal sideloading**; Google Play AccessibilityService distribution rules require separate assessment.
+
+See [technical feasibility](docs/TECHNICAL_FEASIBILITY.md) and [device verification checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md).
+
+## Build locally
+
+Requirements: **JDK 17**, Android SDK platform **35**, build tools **35.0.0**, and **Gradle 8.11.1**. Android Studio is optional.
 
 ```bash
 sdkmanager "platforms;android-35" "build-tools;35.0.0"
 gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
-# resulting APK: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`gradle/wrapper/gradle-wrapper.properties` is supplied, but this source archive doesn't contain a Gradle wrapper JAR. Use installed Gradle 8.11.1, or run `gradle wrapper --gradle-version 8.11.1` to generate standard wrapper files. The GitHub Actions workflow installs Gradle itself.
+Output: `app/build/outputs/apk/debug/app-debug.apk`.
+
+The repository includes the Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle and uploads the compiled debug APK as an artifact. A passing CI build does **not** verify device accessibility behavior or reward eligibility.
 
 ## Testing
 
-- Unit tests cover time gates, Fast Skip, completion hints, missing controls, cross-app changes, debounce/loop cap, and inactive-ad behavior.
-- CI runs tests and an Android debug build. **CI green != device verified.**
-- Run manual tests on an Android 14/15/16 device using an allowed test game. Verify pause, the game allowlist, timer, ad detections, window changes, repeated ads and that only Close/Skip buttons are tapped.
-- Verify the actual game reward **inside the game**; AdSkip Assist cannot confirm it. If a specific ad never closes, its controls may be inaccessible or fail the safety criteria.
+- JVM unit tests cover core state transitions and recognition rules.
+- The [APK workflow](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml) builds and tests the project.
+- Manual testing is required for screenshots, OCR, overlays, gestures, foreground-package changes, Android version differences, Play Store recovery, and real game/ad-network behavior.
+- Reward outcomes must be checked **inside the game**, never inferred from an automatic close.
+
+Follow [manual device test checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md). Report incorrect clicks with reproducible steps, but **do not upload personal screen data**.
 
 ## Troubleshooting
 
-| Symptom | Explanation / next action |
+| Problem | Try this |
 | --- | --- |
-| Not active | Check consent, Android accessibility enabled, allowed game selected, and Start automation. |
-| Game missing | Switch off "Game-classified apps only" and search by label/package. |
-| Ad not detected | Some SDKs use entirely graphical controls, or an ad is missing strong labels; safety defaults to no click. |
-| Ad closes without reward | Reward Priority waits a *minimum*, not guaranteed duration. Increase per-game wait; test the game's legitimate completion UI. |
-| Android disallows accessibility | Android 13+ "Restricted settings" protection may apply to sideloads; see installation steps. |
-| UI closes wrongly | Immediately use Emergency stop, remove game from allowlist, and file a reproducible issue without personal screen data. |
-| No APK artifact | Inspect the Actions build log. Dependencies require GitHub runner internet; CI must finish successfully. |
-| Build fails locally | Confirm Gradle 8.11.1, Java 17, Android SDK 35 and repository access. |
+| Service shows inactive | Review consent, Accessibility settings, game allowlist, and monitoring switch. |
+| Game isn't listed | Disable the *Game-classified apps only* filter and search by package. |
+| Ad won't close | The control may be inaccessible or fail context checks. Try OCR or teach a real corner close button. |
+| Wrong button was pressed | Use **Emergency stop** immediately, disable that game, and review the learned target. |
+| Ad closed but reward was lost | Minimum watch timing does not guarantee credit; increase the per-game wait or use Fast Skip only if rewards are optional. |
+| Screenshot/OCR fails | Android secure-window restrictions, API support, and game rendering can prevent capture or recognition. |
+| No APK artifact | Inspect the GitHub Actions build and test logs. |
 
-## Privacy & policy
+## Project notes
 
-This app has no INTERNET permission and runs locally. Accessibility permission is extremely sensitive. Review the source before enabling. The service is used for narrow, deterministic, opt-in automation and **does not claim to be a disability accessibility tool**. Google Play distribution would require independent policy review; publication approval is not promised.
+The native interface is built with **Jetpack Compose / Material 3**. Design guidance is informed by [Impeccable](https://github.com/pbakaus/impeccable) and [Taste Skill](https://github.com/leonxlnx/taste-skill), with app-specific constraints documented in [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md). These skills are not runtime dependencies.
 
-## Project structure
+| Path | Purpose |
+| --- | --- |
+| `app/src/main/java/com/adskip/assist/automation/` | Accessibility service, ad detection, state machine, visual matching. |
+| `app/src/main/java/com/adskip/assist/data/` | App-private settings, event logs, statistics. |
+| `app/src/main/java/com/adskip/assist/MainActivity.kt` | Native Compose interface. |
+| `app/src/test/` | JVM logic tests. |
+| `.github/workflows/android-apk.yml` | Build, test, and publish downloadable debug APK artifact. |
+| `docs/assets/readme/` | Lightweight, editable vector README illustrations. |
 
-- `app/src/main/java/com/adskip/assist/automation/`: scanner, finite-state engine, accessibility service.
-- `app/src/main/java/com/adskip/assist/data/`: app-private settings, event logs, statistics.
-- `app/src/main/java/com/adskip/assist/MainActivity.kt`: four Compose screens.
-- `app/src/test/`: JVM unit tests for the state machine.
-- `.github/workflows/android-apk.yml`: Android APK build, test and downloadable CI artifact.
-- `docs/TECHNICAL_FEASIBILITY.md`: research and unavoidable constraints.
+---
 
-## Optional GitHub Releases
-
-Push a version tag such as `v0.1.0` to trigger `.github/workflows/release-preview.yml`. It builds the debug APK and creates a **draft prerelease**; review it and publish manually if desired. Debug signing is strictly for testing. No production signing secrets are stored in the project.
-
-### Upload this source ZIP into a new repository using Git (desktop only, no Android Studio)
-
-Create an empty GitHub repository named `adskip-assist` first. Extract this ZIP on your desktop, then from the extracted `AdSkip-Assist` folder run:
-
-```bash
-git init -b main
-git add .
-git commit -m "Initial AdSkip Assist source"
-git remote add origin https://github.com/YOUR-USERNAME/adskip-assist.git
-git push -u origin main
-```
-
-Replace `YOUR-USERNAME` with your GitHub username. GitHub Actions then builds the APK online. Keep the `.github` directory in the repository; it holds both workflows.
+<p align="center"><sub>AdSkip Assist · Selected games. Cautious automation. Your device stays in control.</sub></p>

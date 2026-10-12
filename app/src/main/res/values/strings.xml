@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AdSkip Assist</string>
+    <string name="accessibility_description">With your permission, detects and presses supported advertisement dismissal controls only inside games you select. Can observe text and controls in selected games. Never uploads screen contents or verifies rewards.</string>
+</resources>

@@ -23,6 +23,9 @@
 
 <p align="center"><strong><a href="https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk">⬇️ DOWNLOAD THE APK INSTALLER</a></strong> &nbsp;·&nbsp; <a href="docs/INSTALL.md">Simple installation guide</a> &nbsp;·&nbsp; <a href="https://github.com/shinynaps/adskip/releases/tag/preview">Preview release details</a></p>
 
+> [!CAUTION]
+> **Google Play Protect may block installation of this APK.** AdSkip Assist uses Android's sensitive AccessibilityService API, so Android's enhanced fraud protection can prevent browser/file-manager installations, particularly in the Philippines. **Do not disable Play Protect to proceed.** This is different from Android's separate “Restricted setting” prompt. See [why Play Protect blocks this APK and the developer-testing options](docs/PLAY_PROTECT.md).
+
 > [!NOTE]
 > **Android 11+ · Preview / testing build · No Android Studio required.** The link downloads the <code>.apk</code> directly (no Actions ZIP and no GitHub login required for this public release). You may need to approve installing an APK from your browser or Files app. Builds are not yet real-game verified. Because preview builds are debug-signed in CI, later builds may require uninstalling the previous version first, which erases local settings and taught buttons.
 
@@ -38,7 +41,7 @@
 
 ![Six-step setup workflow for installing and enabling AdSkip Assist](docs/assets/readme/quickstart.svg)
 
-**Installing takes three simple steps:**
+**If Play Protect allows installation, setup has three steps.** Some Android devices will block the APK before step 1 completes; [read the explanation first](docs/PLAY_PROTECT.md).
 
 1. **[Download the APK](https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk)** on your Android phone. Open `AdSkip-Assist-preview.apk` and tap **Install** when prompted. (This is a test build, not a Play Store app.)
 2. Open AdSkip Assist, go to **Settings**, read the privacy disclosure, grant consent, and enable **AdSkip Assist — selected games only** through Android Accessibility settings.
@@ -120,6 +123,7 @@ Follow [manual device test checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md). Rep
 | Wrong button was pressed | Use **Emergency stop** immediately, disable that game, and review the learned target. |
 | Ad closed but reward was lost | Minimum watch timing does not guarantee credit; increase the per-game wait or use Fast Skip only if rewards are optional. |
 | Screenshot/OCR fails | Android secure-window restrictions, API support, and game rendering can prevent capture or recognition. |
+| Play Protect says “App blocked to protect your device” | Android's enhanced fraud protection can block browser-installed APKs that declare AccessibilityService. [Read the official explanation and our safety guidance](docs/PLAY_PROTECT.md). **Do not disable Play Protect.** |
 | Installer download unavailable | Check the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). It is published after a successful main-branch build; if missing, inspect [Actions](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml). |
 
 ## Project notes

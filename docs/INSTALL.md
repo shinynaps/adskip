@@ -1,6 +1,6 @@
 # Install AdSkip Assist on Android
 
-**You don't need Android Studio, a computer, or a GitHub account to download the installer from this public repository.** This is a preview/test APK intended for personal device testing.
+**You don't need Android Studio or a GitHub account to download the preview APK.** However, Play Protect may **block installation** because the app requires AccessibilityService. The one-tap link is not guaranteed to work on all Android devices. See [Play Protect warning and development testing](PLAY_PROTECT.md).
 
 ## 1. Download the installer
 
@@ -10,7 +10,9 @@ The download should be named **AdSkip-Assist-preview.apk** (not a ZIP file). If 
 
 ## 2. Install it
 
-Open the downloaded APK from your Android browser's downloads or the Files app. Android may ask you to allow installs from that app. Approve only if you trust the source, then tap **Install**.
+Open the downloaded APK from your Android browser's downloads or the Files app. Android may ask you to allow installs from that app; approve only if you trust the source.
+
+**If you see “App blocked to protect your device,” stop.** This is a Play Protect high-risk sideload block associated with sensitive accessibility permissions, **not** an ordinary install-unknown-apps prompt. Don't disable Play Protect to get past it. The [developer warning guide](PLAY_PROTECT.md) explains your options.
 
 If Android blocks AccessibilityService activation with a **Restricted setting** warning, consult your phone's Android settings and security guidance. Some Android 13+ devices offer *Apps → AdSkip Assist → ⋮ → Allow restricted settings*. Do not disable security protections.
 

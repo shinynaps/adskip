@@ -22,7 +22,8 @@ jobs:
         run: |
           set -euo pipefail
           base64 --decode .source-bootstrap.tar.xz.b64 | tar -xJf -
-          git rm -f .source-bootstrap.tar.xz.b64 .github/workflows/import-source.yml
+          rm -f .github/workflows/android-apk.yml .github/workflows/release-preview.yml
+          git rm -f .source-bootstrap.tar.xz.b64
           git add -A
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

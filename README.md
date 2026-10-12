@@ -15,7 +15,10 @@
   Recognize supported ad close controls, automate safe dismissals, and get back to playing.
 </p>
 
-<h2 align="center">📲 Download AdSkip Assist for Android</h2>
+<h2 align="center">📲 Preview APK for Android (testing only)</h2>
+
+> [!IMPORTANT]
+> **This APK is not a blocker-free public installer.** Downloads from browsers/file managers may be blocked by Google Play Protect because the app needs sensitive AccessibilityService privileges. A [Google Play policy and release review](docs/PLAY_CONSOLE_SUBMISSION.md) is being prepared, but **approval has not been granted**. Do not disable Play Protect. The button below is for experimental testing where the device allows installation.
 
 <p align="center">
   <a href="https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk"><img src="https://img.shields.io/badge/⬇%20DOWNLOAD%20APK-Install%20on%20Android-22C6A8?style=for-the-badge&labelColor=102437" alt="Download AdSkip Assist Android APK directly" /></a>
@@ -93,16 +96,16 @@ See [technical feasibility](docs/TECHNICAL_FEASIBILITY.md) and [device verificat
 
 ## Build locally
 
-Requirements: **JDK 17**, Android SDK platform **35**, build tools **35.0.0**, and **Gradle 8.11.1**. Android Studio is optional.
+Requirements: **JDK 17**, Android SDK platform **36**, build tools **35.0.0**, and **Gradle 8.11.1**. Android Studio is optional.
 
 ```bash
-sdkmanager "platforms;android-35" "build-tools;35.0.0"
+sdkmanager "platforms;android-36" "build-tools;35.0.0"
 gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
 ```
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
-The repository includes Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle, uploads the build artifact, then publishes the **latest successful main-branch debug APK** to the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). A passing CI build does **not** verify device accessibility behavior or reward eligibility.
+The repository includes Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle, uploads the build artifact, then publishes the **latest successful main-branch debug APK** to the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). A passing CI build does **not** verify device accessibility behavior or reward eligibility. The separate [signed AAB review workflow](.github/workflows/play-review.yml) requires owner-controlled secrets and does not publish the app to Google Play.
 
 ## Testing
 
@@ -128,7 +131,7 @@ Follow [manual device test checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md). Rep
 
 ## Project notes
 
-The native interface is built with **Jetpack Compose / Material 3**. Design guidance is informed by [Impeccable](https://github.com/pbakaus/impeccable) and [Taste Skill](https://github.com/leonxlnx/taste-skill), with app-specific constraints documented in [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md). These skills are not runtime dependencies.
+The native interface is built with **Jetpack Compose / Material 3**. It now targets Android API **36** for 2026 Play submission compatibility. Read the [Play submission checklist](docs/PLAY_CONSOLE_SUBMISSION.md) and [public privacy policy](PRIVACY.md). Design guidance is informed by [Impeccable](https://github.com/pbakaus/impeccable) and [Taste Skill](https://github.com/leonxlnx/taste-skill), with app-specific constraints documented in [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md). These skills are not runtime dependencies.
 
 | Path | Purpose |
 | --- | --- |
@@ -136,7 +139,8 @@ The native interface is built with **Jetpack Compose / Material 3**. Design guid
 | `app/src/main/java/com/adskip/assist/data/` | App-private settings, event logs, statistics. |
 | `app/src/main/java/com/adskip/assist/MainActivity.kt` | Native Compose interface. |
 | `app/src/test/` | JVM logic tests. |
-| `.github/workflows/android-apk.yml` | Test, build, and publish the APK to GitHub Releases and Actions artifacts. |
+| `.github/workflows/android-apk.yml` | Test, build, and publish the debug APK to GitHub Releases and Actions artifacts. |
+| `.github/workflows/play-review.yml` | On-demand, owner-signed AAB for policy review, not public distribution. |
 | `docs/assets/readme/` | Lightweight, editable vector README illustrations. |
 
 ---

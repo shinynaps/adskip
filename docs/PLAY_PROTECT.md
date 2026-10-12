@@ -33,6 +33,9 @@ This preview does **not** currently offer a reliable, Play-Protect-approved one-
 
 ### For the developer
 
+Use the [Google Play review preparation checklist](PLAY_CONSOLE_SUBMISSION.md). The repository targets API 36 and can build privately signed review artifacts once the owner sets the required GitHub Actions secrets. It has **not** been approved or published through Google Play, and signed APKs can still trigger Play Protect when internet-sideloaded.
+
+
 1. Review the complete app code and dependencies for unintended access, leaks, and excessive privilege. An absent INTERNET permission is a helpful limitation but **not a complete security audit**.
 2. Keep the AccessibilityService limited to explicitly approved games, require clear disclosure and consent, and maintain the emergency stop.
 3. Consider publishing through a distribution channel with appropriate review, including Google Play testing **only after accessibility-policy review**. Google Play approval is **not guaranteed** for an ad automation app.

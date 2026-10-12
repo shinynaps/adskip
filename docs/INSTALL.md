@@ -1,6 +1,6 @@
 # Install AdSkip Assist on Android
 
-**You don't need Android Studio or a GitHub account to download the preview APK.** However, Play Protect may **block installation** because the app requires AccessibilityService. The one-tap link is not guaranteed to work on all Android devices. See [Play Protect warning and development testing](PLAY_PROTECT.md).
+**You don't need Android Studio or a GitHub account to download the preview APK.** However, Play Protect may **block installation** because the app requires AccessibilityService. The one-tap link is not guaranteed to work on all Android devices. See [Play Protect warning and development testing](PLAY_PROTECT.md) and the [pending Google Play review path](PLAY_CONSOLE_SUBMISSION.md). This app has not been approved by Google Play.
 
 ## 1. Download the installer
 

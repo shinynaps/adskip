@@ -31,9 +31,9 @@ elif matching[0].get(A + "permission") != "android.permission.BIND_ACCESSIBILITY
 
 if service_config.get(A + "isAccessibilityTool") != "false":
     errors.append("This general automation app must NOT claim to be a disability accessibility tool")
-if not re.search(r"targetSdk\\s*=\\s*36\\b", gradle):
+if not re.search(r"targetSdk\s*=\s*36\b", gradle):
     errors.append("Google Play requires targetSdk 36+ for new phone apps after 2026-08-31")
-if not re.search(r"compileSdk\\s*=\\s*36\\b", gradle):
+if not re.search(r"compileSdk\s*=\s*36\b", gradle):
     errors.append("Expected compileSdk 36")
 
 if errors:

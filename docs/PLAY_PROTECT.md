@@ -29,16 +29,16 @@ The Android manifest does **not** currently declare `INTERNET`, `READ_SMS`, or `
 
 ### For people who just want to install it
 
-This preview does **not** currently offer a reliable, Play-Protect-approved one-tap installation route in all regions. If your phone blocks the APK, **keep Play Protect on and do not proceed through any bypass tutorial**. You can review the project's public source code and watch the [GitHub Releases](https://github.com/shinynaps/adskip/releases) for a future approved distribution.
+This preview does **not** currently offer a reliable, Play-Protect-approved one-tap installation route in all regions. If your phone blocks the APK, **keep Play Protect on and do not proceed through any bypass tutorial**. You can review the project's public source code and watch [GitHub Releases](https://github.com/shinynaps/adskip/releases). This project does not offer a guaranteed warning-free browser-install route.
 
 ### For the developer
 
-Use the [Google Play review preparation checklist](PLAY_CONSOLE_SUBMISSION.md). The repository targets API 36 and can build privately signed review artifacts once the owner sets the required GitHub Actions secrets. It has **not** been approved or published through Google Play, and signed APKs can still trigger Play Protect when internet-sideloaded.
+Use the [GitHub-only distribution and signing guide](GITHUB_DISTRIBUTION.md). This app will not be listed on Google Play. Developers distributing outside Play can use the **Android Developer Console** for signing-key/package registration; this is separate from requesting a Play Protect classification appeal. Signed APKs can still trigger Play Protect when internet-sideloaded.
 
 
 1. Review the complete app code and dependencies for unintended access, leaks, and excessive privilege. An absent INTERNET permission is a helpful limitation but **not a complete security audit**.
 2. Keep the AccessibilityService limited to explicitly approved games, require clear disclosure and consent, and maintain the emergency stop.
-3. Consider publishing through a distribution channel with appropriate review, including Google Play testing **only after accessibility-policy review**. Google Play approval is **not guaranteed** for an ad automation app.
+3. Publish any developer-signed APK only to GitHub Releases after device checks; do not assume signing or developer verification bypasses Play Protect.
 4. If the implementation and distribution are compliant and you believe Play Protect classified it incorrectly, follow [Google's Play Protect appeal process](https://developers.google.com/android/play-protect/warning-dev-guidance).
 5. For your own **controlled developer testing**, Android officially supports installing locally built APKs from a connected development computer using **Android SDK Platform-Tools (ADB)**, without Android Studio. This is a development workflow, **not a consumer installation recommendation or a guarantee that security checks will allow it**. Do not override a device's protection if it still blocks the package.
 

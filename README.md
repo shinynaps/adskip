@@ -18,7 +18,7 @@
 <h2 align="center">📲 Preview APK for Android (testing only)</h2>
 
 > [!IMPORTANT]
-> **This APK is not a blocker-free public installer.** Downloads from browsers/file managers may be blocked by Google Play Protect because the app needs sensitive AccessibilityService privileges. A [Google Play policy and release review](docs/PLAY_CONSOLE_SUBMISSION.md) is being prepared, but **approval has not been granted**. Do not disable Play Protect. The button below is for experimental testing where the device allows installation.
+> **This APK is not a blocker-free public installer.** Downloads from browsers/file managers may be blocked by Google Play Protect because the app needs sensitive AccessibilityService privileges. This repository distributes **only through GitHub**. The [GitHub-only distribution guide](docs/GITHUB_DISTRIBUTION.md) explains stable signing and Google’s separate off-Play verification and Play Protect appeal routes; neither guarantees installation. Do not disable Play Protect. The button below is for experimental testing where the device allows installation.
 
 <p align="center">
   <a href="https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk"><img src="https://img.shields.io/badge/⬇%20DOWNLOAD%20APK-Install%20on%20Android-22C6A8?style=for-the-badge&labelColor=102437" alt="Download AdSkip Assist Android APK directly" /></a>
@@ -38,7 +38,7 @@
 
 ## Explore
 
-[Quick start](#quick-start) · [Features](#features) · [How it works](#how-it-works) · [Safety and limitations](#safety-and-limitations) · [Build](#build-locally) · [Testing](#testing) · [Troubleshooting](#troubleshooting)
+[GitHub-only installation](docs/GITHUB_DISTRIBUTION.md) · [Quick start](#quick-start) · [Features](#features) · [How it works](#how-it-works) · [Safety and limitations](#safety-and-limitations) · [Build](#build-locally) · [Testing](#testing) · [Troubleshooting](#troubleshooting)
 
 ## Quick start
 
@@ -105,7 +105,7 @@ gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
-The repository includes Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle, uploads the build artifact, then publishes the **latest successful main-branch debug APK** to the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). A passing CI build does **not** verify device accessibility behavior or reward eligibility. The separate [signed AAB review workflow](.github/workflows/play-review.yml) requires owner-controlled secrets and does not publish the app to Google Play.
+The repository includes Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle, uploads the build artifact, then publishes the **latest successful main-branch debug APK** to the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). A passing CI build does **not** verify device accessibility behavior or reward eligibility. The separate [developer-signed GitHub APK workflow](.github/workflows/github-release.yml) requires owner-controlled secrets; it publishes only to GitHub Releases.
 
 ## Testing
 
@@ -131,7 +131,7 @@ Follow [manual device test checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md). Rep
 
 ## Project notes
 
-The native interface is built with **Jetpack Compose / Material 3**. It now targets Android API **36** for 2026 Play submission compatibility. Read the [Play submission checklist](docs/PLAY_CONSOLE_SUBMISSION.md) and [public privacy policy](PRIVACY.md). Design guidance is informed by [Impeccable](https://github.com/pbakaus/impeccable) and [Taste Skill](https://github.com/leonxlnx/taste-skill), with app-specific constraints documented in [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md). These skills are not runtime dependencies.
+The native interface is built with **Jetpack Compose / Material 3**. It targets Android API **36** and publishes Android APKs exclusively through GitHub. Read the [GitHub distribution guide](docs/GITHUB_DISTRIBUTION.md) and [public privacy policy](PRIVACY.md). Design guidance is informed by [Impeccable](https://github.com/pbakaus/impeccable) and [Taste Skill](https://github.com/leonxlnx/taste-skill), with app-specific constraints documented in [DESIGN.md](DESIGN.md) and [PRODUCT.md](PRODUCT.md). These skills are not runtime dependencies.
 
 | Path | Purpose |
 | --- | --- |
@@ -140,7 +140,7 @@ The native interface is built with **Jetpack Compose / Material 3**. It now targ
 | `app/src/main/java/com/adskip/assist/MainActivity.kt` | Native Compose interface. |
 | `app/src/test/` | JVM logic tests. |
 | `.github/workflows/android-apk.yml` | Test, build, and publish the debug APK to GitHub Releases and Actions artifacts. |
-| `.github/workflows/play-review.yml` | On-demand, owner-signed AAB for policy review, not public distribution. |
+| `.github/workflows/github-release.yml` | On-demand, owner-signed GitHub APK release (no Google Play). |
 | `docs/assets/readme/` | Lightweight, editable vector README illustrations. |
 
 ---

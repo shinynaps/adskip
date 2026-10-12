@@ -1,0 +1,119 @@
+name: Publish GitHub-only signed APK
+
+# Only owner-initiated; never ships a debug-signed build as a production update.
+# GitHub Releases is the ONLY publishing destination.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "GitHub release tag (must match app versionName, e.g. v0.3.0)"
+        required: true
+        default: "v0.3.0"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: signed-github-release
+  cancel-in-progress: false
+
+jobs:
+  github-apk-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Validate version and permissions
+        run: |
+          set -euo pipefail
+          python3 scripts/check_permission_scope.py
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Tag must be vMAJOR.MINOR.PATCH"; exit 1; }
+          version="$(sed -nE 's/^[[:space:]]*versionName = "([^"]+)".*/\1/p' app/build.gradle.kts)"
+          [[ "$RELEASE_TAG" == "v$version" ]] || { echo "::error::Tag $RELEASE_TAG does not match app version $version"; exit 1; }
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "::error::Release tag already exists. Bump versionName/versionCode before a new release."
+            exit 1
+          fi
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+      - name: Restore stable release signing key
+        env:
+          ADSKIP_RELEASE_KEYSTORE_B64: ${{ secrets.ADSKIP_RELEASE_KEYSTORE_B64 }}
+          ADSKIP_RELEASE_STORE_PASSWORD: ${{ secrets.ADSKIP_RELEASE_STORE_PASSWORD }}
+          ADSKIP_RELEASE_KEY_ALIAS: ${{ secrets.ADSKIP_RELEASE_KEY_ALIAS }}
+          ADSKIP_RELEASE_KEY_PASSWORD: ${{ secrets.ADSKIP_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in ADSKIP_RELEASE_KEYSTORE_B64 ADSKIP_RELEASE_STORE_PASSWORD ADSKIP_RELEASE_KEY_ALIAS ADSKIP_RELEASE_KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing $name. Follow docs/GITHUB_DISTRIBUTION.md."
+              exit 1
+            fi
+          done
+          umask 077
+          printf '%s' "$ADSKIP_RELEASE_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/adskip-release.jks"
+          test -s "$RUNNER_TEMP/adskip-release.jks"
+          echo "ADSKIP_RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/adskip-release.jks" >> "$GITHUB_ENV"
+      - name: Test and build signed APK
+        env:
+          ADSKIP_RELEASE_STORE_PASSWORD: ${{ secrets.ADSKIP_RELEASE_STORE_PASSWORD }}
+          ADSKIP_RELEASE_KEY_ALIAS: ${{ secrets.ADSKIP_RELEASE_KEY_ALIAS }}
+          ADSKIP_RELEASE_KEY_PASSWORD: ${{ secrets.ADSKIP_RELEASE_KEY_PASSWORD }}
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleRelease
+      - name: Verify signature and prepare checksums
+        run: |
+          set -euo pipefail
+          apk="app/build/outputs/apk/release/app-release.apk"
+          test -s "$apk"
+          mkdir -p dist
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk" > dist/signature-info.txt
+          cp "$apk" dist/AdSkip-Assist.apk
+          (cd dist && sha256sum AdSkip-Assist.apk > SHA256SUMS.txt)
+      - name: Publish versioned GitHub pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          cat > dist/RELEASE_NOTES.md <<EOF
+          ## AdSkip Assist $RELEASE_TAG — GitHub-only Android APK
+
+          Download **AdSkip-Assist.apk** below. This APK is developer-signed
+          with the maintainer's persistent key (unlike disposable CI debug builds).
+
+          **Important:** This GitHub-hosted APK still uses Android AccessibilityService
+          and may be blocked by Google Play Protect when installed through a browser.
+          Stable signing does NOT exempt the app from Android security restrictions.
+          We do not recommend disabling Play Protect.
+
+          - [Installation and safety guidance](https://github.com/$GH_REPO/blob/main/docs/INSTALL.md)
+          - [Why some phones block installation](https://github.com/$GH_REPO/blob/main/docs/PLAY_PROTECT.md)
+          - [GitHub-only distribution & key registration](https://github.com/$GH_REPO/blob/main/docs/GITHUB_DISTRIBUTION.md)
+          - Review certificate fingerprints in signature-info.txt and integrity hash in SHA256SUMS.txt.
+
+          Device and rewarded-ad compatibility are not yet broadly verified.
+          EOF
+          gh release create "$RELEASE_TAG" dist/AdSkip-Assist.apk dist/SHA256SUMS.txt dist/signature-info.txt \
+            --target "$GITHUB_SHA" \
+            --title "AdSkip Assist $RELEASE_TAG · GitHub APK" \
+            --notes-file dist/RELEASE_NOTES.md \
+            --prerelease
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/adskip-release.jks"

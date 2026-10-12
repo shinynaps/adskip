@@ -4,6 +4,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
+      - '.github/workflows/android-apk.yml'
   pull_request:
 
 permissions:

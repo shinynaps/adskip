@@ -13,21 +13,21 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 3
-        versionName = "0.3.0-dev"
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    // Only configure production signing when all required secrets are supplied.
-    // Never silently sign release builds with the debug keystore.
-    val uploadStore = System.getenv("PLAY_UPLOAD_KEYSTORE_PATH")
-    val uploadStorePassword = System.getenv("PLAY_UPLOAD_STORE_PASSWORD")
-    val uploadKeyAlias = System.getenv("PLAY_UPLOAD_KEY_ALIAS")
-    val uploadKeyPassword = System.getenv("PLAY_UPLOAD_KEY_PASSWORD")
+    // GitHub Releases use a long-lived developer-owned signing key.
+    // Missing secrets never fall back to debug signing for release builds.
+    val uploadStore = System.getenv("ADSKIP_RELEASE_KEYSTORE_PATH")
+    val uploadStorePassword = System.getenv("ADSKIP_RELEASE_STORE_PASSWORD")
+    val uploadKeyAlias = System.getenv("ADSKIP_RELEASE_KEY_ALIAS")
+    val uploadKeyPassword = System.getenv("ADSKIP_RELEASE_KEY_PASSWORD")
     val hasUploadSigning = listOf(uploadStore, uploadStorePassword, uploadKeyAlias, uploadKeyPassword)
         .all { !it.isNullOrBlank() }
 
     signingConfigs {
         if (hasUploadSigning) {
-            create("playUpload") {
+            create("githubRelease") {
                 storeFile = file(requireNotNull(uploadStore))
                 storePassword = requireNotNull(uploadStorePassword)
                 keyAlias = requireNotNull(uploadKeyAlias)
@@ -38,7 +38,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            if (hasUploadSigning) signingConfig = signingConfigs.getByName("playUpload")
+            if (hasUploadSigning) signingConfig = signingConfigs.getByName("githubRelease")
         }
     }
     compileOptions {

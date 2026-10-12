@@ -1,4 +1,5 @@
 name: Build Android APK
+
 on:
   workflow_dispatch:
   push:
@@ -26,10 +27,61 @@ jobs:
           gradle-version: '8.11.1'
       - name: Unit tests and debug APK
         run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
-      - name: Publish installable debug APK
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: AdSkip-Assist-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
           if-no-files-found: error
+
+  publish-preview:
+    name: Publish direct-download preview APK
+    needs: build
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: adskip-preview-release
+      cancel-in-progress: false
+    steps:
+      - name: Download verified build output
+        uses: actions/download-artifact@v4
+        with:
+          name: AdSkip-Assist-debug-apk
+          path: dist
+      - name: Prepare installer and checksum
+        run: |
+          set -euo pipefail
+          cp dist/app-debug.apk dist/AdSkip-Assist-preview.apk
+          cd dist
+          sha256sum AdSkip-Assist-preview.apk > AdSkip-Assist-preview.apk.sha256
+      - name: Publish GitHub preview release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BUILD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          cat > dist/release-notes.md <<EOF
+          ## AdSkip Assist — latest Android test build
+
+          **Download \`AdSkip-Assist-preview.apk\` below to install directly.** No Android Studio, Actions artifact ZIP, or GitHub account is needed for public downloads.
+
+          **Status:** Preview/debug build for testing on Android 11+. Real mobile-game ad detection, gesture behavior, and reward preservation have **not** been verified across devices or ad SDKs. This app cannot guarantee rewards or bypass ad completion requirements.
+
+          **Source commit:** [\`${BUILD_SHA:0:12}\`](https://github.com/${GH_REPO}/commit/${BUILD_SHA})
+
+          **Integrity:** SHA-256 is available in \`AdSkip-Assist-preview.apk.sha256\`.
+
+          **Updates:** CI uses standard debug signing. A new preview build may use a different signing key; installing over the previous build can fail. Uninstalling the old debug build clears local settings and learned targets. Avoid storing anything important in preview builds.
+
+          [Installation guide](https://github.com/${GH_REPO}/blob/main/docs/INSTALL.md) · [Source and known limitations](https://github.com/${GH_REPO}#readme)
+          EOF
+          if gh release view preview >/dev/null 2>&1; then
+            gh release edit preview --title "AdSkip Assist · Preview APK" --notes-file dist/release-notes.md --prerelease
+          else
+            gh release create preview --title "AdSkip Assist · Preview APK" --notes-file dist/release-notes.md --prerelease --target "$BUILD_SHA"
+          fi
+          gh release upload preview dist/AdSkip-Assist-preview.apk dist/AdSkip-Assist-preview.apk.sha256 --clobber

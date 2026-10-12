@@ -15,6 +15,18 @@
   Recognize supported ad close controls, automate safe dismissals, and get back to playing.
 </p>
 
+<h2 align="center">📲 Download AdSkip Assist for Android</h2>
+
+<p align="center">
+  <a href="https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk"><img src="https://img.shields.io/badge/⬇%20DOWNLOAD%20APK-Install%20on%20Android-22C6A8?style=for-the-badge&labelColor=102437" alt="Download AdSkip Assist Android APK directly" /></a>
+</p>
+
+<p align="center"><strong><a href="https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk">⬇️ DOWNLOAD THE APK INSTALLER</a></strong> &nbsp;·&nbsp; <a href="docs/INSTALL.md">Simple installation guide</a> &nbsp;·&nbsp; <a href="https://github.com/shinynaps/adskip/releases/tag/preview">Preview release details</a></p>
+
+> [!NOTE]
+> **Android 11+ · Preview / testing build · No Android Studio required.** The link downloads the <code>.apk</code> directly (no Actions ZIP and no GitHub login required for this public release). You may need to approve installing an APK from your browser or Files app. Builds are not yet real-game verified. Because preview builds are debug-signed in CI, later builds may require uninstalling the previous version first, which erases local settings and taught buttons.
+
+
 > [!IMPORTANT]
 > **AdSkip Assist cannot instantly complete rewarded ads or guarantee rewards.** Game and ad-SDK completion rules still apply. Reward Priority uses timing and visible hints, **not** access to SDK reward callbacks. No reward spoofing, APK modification, or ad-traffic interception is performed. **Physical-device compatibility is still being verified.**
 
@@ -24,21 +36,20 @@
 
 ## Quick start
 
-![Six-step setup workflow from GitHub Actions build to optionally teaching a close button](docs/assets/readme/quickstart.svg)
+![Six-step setup workflow for installing and enabling AdSkip Assist](docs/assets/readme/quickstart.svg)
 
-You do **not** need Android Studio to install the app.
+**Installing takes three simple steps:**
 
-1. Open **[Build Android APK](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml)**, select **Run workflow**, and open the completed run.
-2. Download the **AdSkip-Assist-debug-apk** artifact. Extract it and install `app-debug.apk` on your phone.
-3. In **Settings**, read the accessibility disclosure, enable consent, and open Android's **Accessibility settings** to activate *AdSkip Assist — selected games only*.
-4. In **Games**, explicitly enable the games you want to monitor.
-5. On **Home**, tap **Start monitoring**. Use **Reward Priority** for initial testing.
-6. Optional: enable **OCR** or **Learned targets**. To teach a button, choose **Teach** for a game, capture a real ad with the temporary overlay, then select and save a **corner close control**.
+1. **[Download the APK](https://github.com/shinynaps/adskip/releases/download/preview/AdSkip-Assist-preview.apk)** on your Android phone. Open `AdSkip-Assist-preview.apk` and tap **Install** when prompted. (This is a test build, not a Play Store app.)
+2. Open AdSkip Assist, go to **Settings**, read the privacy disclosure, grant consent, and enable **AdSkip Assist — selected games only** through Android Accessibility settings.
+3. In **Games**, enable the games you approve. Back on **Home**, tap **Start monitoring** and begin with **Reward Priority**.
+
+**Optional:** Enable OCR or learned buttons in Settings. The **Teach** action captures a button from a real ad, and stores only a small corner crop. Use **Settings → Emergency stop** whenever needed.
 
 > [!NOTE]
-> Android 13+ may show a **Restricted setting** warning for sideloaded AccessibilityServices. Some phones offer **Settings → Apps → AdSkip Assist → ⋮ → Allow restricted settings**. Security settings vary across devices. Review permissions carefully.
+> Android 13+ can show **Restricted setting** for sideloaded accessibility apps. Depending on your phone, Android may offer **Settings → Apps → AdSkip Assist → ⋮ → Allow restricted settings**. Review permissions carefully; don't disable system security protections. If you have already installed an older debug APK signed with another key, you may have to uninstall it before installing this one, losing local configuration.
 
-**Stop immediately:** Open **Settings → Emergency stop**, or disable the service through Android Accessibility settings.
+**Want to build from source?** Use [GitHub Actions](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml) or the [local build instructions](#build-locally). **You do not need to build anything just to install the preview APK.**
 
 ## Features
 
@@ -88,7 +99,7 @@ gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
-The repository includes the Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle and uploads the compiled debug APK as an artifact. A passing CI build does **not** verify device accessibility behavior or reward eligibility.
+The repository includes Gradle wrapper properties but not the binary wrapper JAR. GitHub Actions installs Gradle, uploads the build artifact, then publishes the **latest successful main-branch debug APK** to the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). A passing CI build does **not** verify device accessibility behavior or reward eligibility.
 
 ## Testing
 
@@ -109,7 +120,7 @@ Follow [manual device test checklist](docs/MANUAL_DEVICE_TEST_CHECKLIST.md). Rep
 | Wrong button was pressed | Use **Emergency stop** immediately, disable that game, and review the learned target. |
 | Ad closed but reward was lost | Minimum watch timing does not guarantee credit; increase the per-game wait or use Fast Skip only if rewards are optional. |
 | Screenshot/OCR fails | Android secure-window restrictions, API support, and game rendering can prevent capture or recognition. |
-| No APK artifact | Inspect the GitHub Actions build and test logs. |
+| Installer download unavailable | Check the [Preview Release](https://github.com/shinynaps/adskip/releases/tag/preview). It is published after a successful main-branch build; if missing, inspect [Actions](https://github.com/shinynaps/adskip/actions/workflows/android-apk.yml). |
 
 ## Project notes
 
@@ -121,7 +132,7 @@ The native interface is built with **Jetpack Compose / Material 3**. Design guid
 | `app/src/main/java/com/adskip/assist/data/` | App-private settings, event logs, statistics. |
 | `app/src/main/java/com/adskip/assist/MainActivity.kt` | Native Compose interface. |
 | `app/src/test/` | JVM logic tests. |
-| `.github/workflows/android-apk.yml` | Build, test, and publish downloadable debug APK artifact. |
+| `.github/workflows/android-apk.yml` | Test, build, and publish the APK to GitHub Releases and Actions artifacts. |
 | `docs/assets/readme/` | Lightweight, editable vector README illustrations. |
 
 ---

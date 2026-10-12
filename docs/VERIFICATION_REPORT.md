@@ -1,19 +1,26 @@
-# Verification performed 2026-10-12
+# AdSkip Assist v0.2 — verification record (2026-10-12)
 
-## Completed
+## Confirmed
 
-- Manually reviewed project layout, manifest, permissions, and Gradle/CI configuration.
-- Reviewed official AdMob SSV/rewarded, AppLovin S2S, Android Accessibility and Google Play policy documentation.
-- Compiled `AdStateMachine.kt` and `AdUiRules.kt` using the installed local Kotlin/JVM compiler (1.9.0).
-- Executed all **17** source unit-test methods from `AdStateMachineTest.kt` and `AdUiRulesTest.kt` with a local JUnit-compatible shim because JUnit libraries/Gradle were not installed. All 17 assertions/test methods completed successfully.
+- Source committed to [shinynaps/adskip](https://github.com/shinynaps/adskip).
+- CI import/build [run 38190337510](https://github.com/shinynaps/adskip/actions/runs/38190337510) **completed successfully** with Android SDK 35, JDK 17, Gradle 8.11.1.
+- `:app:testDebugUnitTest` and `:app:assembleDebug` both succeeded; the project contains **18 JUnit unit-test methods** for pure Kotlin ad matching/state machine logic.
+- GitHub Actions uploaded artifact `AdSkip-Assist-v2-debug-apk` (artifact 11721228127, 36,953,102 bytes archive size). It contains the installable debug APK produced by Gradle.
+- Local Kotlin rules/state-machine compilation and a separate focused sanity test also passed.
 
-## Not completed / unavailable
+## Not verified; physical device required
 
-- Android Gradle Plugin and Android SDK were unavailable in the execution environment, and it cannot resolve the external artifact repositories. Thus `:app:assembleDebug` and `:app:testDebugUnitTest` could NOT be executed here.
-- No installable APK was generated in this environment; the Actions workflows must compile one after the source is pushed into a repository.
-- No Android emulator or physical device was connected. Accessibility UI behavior, actual ad SDK integration, APK installation, and real rewards remain untested.
-- No GitHub repository was created or uploaded. Source is provided as a ZIP and ready for the user to upload.
+- Actual installation and startup on a phone, accessibility permission behavior, screenshot permissions and screenshot-blocked windows.
+- Correctness and effectiveness of on-device OCR and learned-button template matching in particular games.
+- Overlay Teach UX, screen-coordinate mapping, gesture safety across resolutions/orientations, and Play Store return behavior.
+- Reward credit or completion at an advertising SDK/game backend. No third-party automation can guarantee this.
 
-## Scope of results
+## Safety and privacy boundaries
 
-The 17 passing tests validate only pure Kotlin automation decisions and text/control recognition heuristics. They do **not** establish that the Android app compiles or that it works in any particular game. Do not use this report as proof of device compatibility or reward preservation.
+- App allowlist, explicit consent, restart-safe pause, local-only settings and activity logs.
+- No root, intercepting ad network requests, modifying games, or forging reward-completion callbacks.
+- Off-by-default visual OCR/template modes and store recovery. Real-game manual checks are mandatory before enabling them broadly.
+
+## Install
+
+Open the GitHub Actions run above, download `AdSkip-Assist-v2-debug-apk`, extract and install `app-debug.apk`. On Android enable `AdSkip Assist — selected games only` in Accessibility settings after reading the privacy disclosure.
